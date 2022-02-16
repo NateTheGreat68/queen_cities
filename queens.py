@@ -37,8 +37,6 @@ class TourParser(HTMLParser):
             ):
         self.events = []
         self.eventTitle = None
-        self.eventDate = None
-        self.eventBrief = None
         self.is_h1 = False
         self.tourName = None
         super().__init__(**kwargs)
@@ -62,8 +60,6 @@ class TourParser(HTMLParser):
             ):
         if tag == 'a':
             self.eventTitle = None
-            self.eventDate = None
-            self.eventBrief = None
         elif tag == 'h1':
             self.is_h1 = False
 
@@ -74,17 +70,15 @@ class TourParser(HTMLParser):
         if self.eventTitle:
             matches = eventDataRegex.match(data)
             if matches:
-                self.eventDate = datetime(
+                self.events.append({
+                    'Tour Name': self.tourName,
+                    'Event Title': self.eventTitle,
+                    'Event Date': datetime(
                         int(matches.group('year')),
                         int(matches.group('month')),
                         int(matches.group('day')),
-                        )
-                self.eventBrief = matches.group('brief')
-                self.events.append({
-                    'Tour Name': self.tourName,
-                    'title': self.eventTitle,
-                    'date': self.eventDate,
-                    'brief': self.eventBrief,
+                        ),
+                    'Event Brief': matches.group('brief')
                     })
         elif self.is_h1:
             self.tourName = data
