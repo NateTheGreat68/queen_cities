@@ -68,8 +68,8 @@ class TourParser(HTMLParser):
             data,
             ):
         if self.eventTitle:
-            eventDataMatches = eventDataRegex.match(data)
-            detailsMatches = detailsRegex.match(self.eventTitle)
+            eventDataMatches = eventDataRegex.search(data)
+            detailsMatches = detailsRegex.search(self.eventTitle)
             if eventDataMatches:
                 self.events.append({
                     'Tour Name': cleanupRegex.sub('', self.tourName),
