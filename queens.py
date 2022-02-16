@@ -84,7 +84,7 @@ class TourParser(HTMLParser):
             self.tourName = data
 
 eventUrlRegex = re.compile(
-        r'/detail/live/\d+/',
+        r'^/detail/live/\d+/',
         re.IGNORECASE
         )
 
