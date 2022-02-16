@@ -8,7 +8,7 @@ from datetime import datetime
 from html.parser import HTMLParser
 
 BASE_URL = 'https://www.queenconcerts.com'
-STARTING_URL = 'https://www.queenconcerts.com/live/queen.html'
+STARTING_URL = BASE_URL+'/live/queen.html'
 
 
 class BaseParser(HTMLParser):
