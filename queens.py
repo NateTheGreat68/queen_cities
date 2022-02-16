@@ -69,6 +69,7 @@ class TourParser(HTMLParser):
             ):
         if self.eventTitle:
             eventDataMatches = eventDataRegex.match(data)
+            detailsMatches = detailsRegex.match(self.eventTitle)
             if eventDataMatches:
                 self.events.append({
                     'Tour Name': cleanupRegex.sub('', self.tourName),
@@ -78,7 +79,9 @@ class TourParser(HTMLParser):
                         int(eventDataMatches.group('month')),
                         int(eventDataMatches.group('day')),
                         ),
-                    'Event Brief': eventDataMatches.group('brief')
+                    'Event Brief': eventDataMatches.group('brief'),
+                    'Event Venue': detailsMatches.group('venue') if detailsMatches else '',
+                    'Event City': detailsMatches.group('city') if detailsMatches else '',
                     })
         elif self.is_h1:
             self.tourName = data
@@ -90,6 +93,11 @@ eventUrlRegex = re.compile(
 
 eventDataRegex = re.compile(
         r'^(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4})\s+(?P<brief>.*)$',
+        )
+
+detailsRegex = re.compile(
+        r' live at the (?P<venue>[^,]+),\s*(?P<city>.*)$',
+        re.IGNORECASE
         )
 
 cleanupRegex = re.compile(
