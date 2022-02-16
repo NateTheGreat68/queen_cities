@@ -8,7 +8,7 @@ from datetime import datetime
 from html.parser import HTMLParser
 
 BASE_URL = 'https://www.queenconcerts.com'
-STARTING_URL = 'https://www.queenconcerts.com/live/queen.html'
+STARTING_URL = BASE_URL+'/live/queen.html'
 
 
 class BaseParser(HTMLParser):
@@ -68,17 +68,20 @@ class TourParser(HTMLParser):
             data,
             ):
         if self.eventTitle:
-            matches = eventDataRegex.match(data)
-            if matches:
+            eventDataMatches = eventDataRegex.search(data)
+            detailsMatches = detailsRegex.search(self.eventTitle)
+            if eventDataMatches:
                 self.events.append({
                     'Tour Name': cleanupRegex.sub('', self.tourName),
                     'Event Title': cleanupRegex.sub('', self.eventTitle),
                     'Event Date': datetime(
-                        int(matches.group('year')),
-                        int(matches.group('month')),
-                        int(matches.group('day')),
+                        int(eventDataMatches.group('year')),
+                        int(eventDataMatches.group('month')),
+                        int(eventDataMatches.group('day')),
                         ),
-                    'Event Brief': matches.group('brief')
+                    'Event Brief': eventDataMatches.group('brief'),
+                    'Event Venue': detailsMatches.group('venue') if detailsMatches else '',
+                    'Event City': detailsMatches.group('city') if detailsMatches else '',
                     })
         elif self.is_h1:
             self.tourName = data
@@ -90,6 +93,11 @@ eventUrlRegex = re.compile(
 
 eventDataRegex = re.compile(
         r'^(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4})\s+(?P<brief>.*)$',
+        )
+
+detailsRegex = re.compile(
+        r' live at the (?P<venue>[^,]+),\s*(?P<city>.*)$',
+        re.IGNORECASE
         )
 
 cleanupRegex = re.compile(
