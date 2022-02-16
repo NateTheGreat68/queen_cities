@@ -96,7 +96,7 @@ eventDataRegex = re.compile(
         )
 
 detailsRegex = re.compile(
-        r' live at the (?P<venue>[^,]+),\s*(?P<city>.*)$',
+        r' live at the (?P<venue>[^,]+),\s*(?P<city>.*?(?=\s+\()|.*$)',
         re.IGNORECASE
         )
 
