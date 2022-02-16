@@ -68,17 +68,17 @@ class TourParser(HTMLParser):
             data,
             ):
         if self.eventTitle:
-            matches = eventDataRegex.match(data)
-            if matches:
+            eventDataMatches = eventDataRegex.match(data)
+            if eventDataMatches:
                 self.events.append({
                     'Tour Name': cleanupRegex.sub('', self.tourName),
                     'Event Title': cleanupRegex.sub('', self.eventTitle),
                     'Event Date': datetime(
-                        int(matches.group('year')),
-                        int(matches.group('month')),
-                        int(matches.group('day')),
+                        int(eventDataMatches.group('year')),
+                        int(eventDataMatches.group('month')),
+                        int(eventDataMatches.group('day')),
                         ),
-                    'Event Brief': matches.group('brief')
+                    'Event Brief': eventDataMatches.group('brief')
                     })
         elif self.is_h1:
             self.tourName = data
