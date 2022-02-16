@@ -71,8 +71,8 @@ class TourParser(HTMLParser):
             matches = eventDataRegex.match(data)
             if matches:
                 self.events.append({
-                    'Tour Name': self.tourName,
-                    'Event Title': self.eventTitle,
+                    'Tour Name': cleanupRegex.sub('', self.tourName),
+                    'Event Title': cleanupRegex.sub('', self.eventTitle),
                     'Event Date': datetime(
                         int(matches.group('year')),
                         int(matches.group('month')),
@@ -90,6 +90,11 @@ eventUrlRegex = re.compile(
 
 eventDataRegex = re.compile(
         r'^(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4})\s+(?P<brief>.*)$',
+        )
+
+cleanupRegex = re.compile(
+        r'^(Queen on tour:\s+|Concert:\s+)',
+        re.IGNORECASE
         )
 
 def get_response(
