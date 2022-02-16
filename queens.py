@@ -39,6 +39,8 @@ class TourParser(HTMLParser):
         self.eventTitle = None
         self.eventDate = None
         self.eventBrief = None
+        self.is_h1 = False
+        self.tourName = None
         super().__init__(**kwargs)
 
     def handle_starttag(
@@ -51,6 +53,8 @@ class TourParser(HTMLParser):
             if 'href' in attrDict \
                     and eventUrlRegex.match(attrDict['href']):
                 self.eventTitle = attrDict['title']
+        elif tag == 'h1':
+            self.is_h1 = True
 
     def handle_endtag(
             self,
@@ -60,6 +64,8 @@ class TourParser(HTMLParser):
             self.eventTitle = None
             self.eventDate = None
             self.eventBrief = None
+        elif tag == 'h1':
+            self.is_h1 = False
 
     def handle_data(
             self,
@@ -75,10 +81,13 @@ class TourParser(HTMLParser):
                         )
                 self.eventBrief = matches.group('brief')
                 self.events.append({
+                    'Tour Name': self.tourName,
                     'title': self.eventTitle,
                     'date': self.eventDate,
                     'brief': self.eventBrief,
                     })
+        elif self.is_h1:
+            self.tourName = data
 
 eventUrlRegex = re.compile(
         r'/detail/live/\d+/',
