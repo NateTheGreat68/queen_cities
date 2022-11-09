@@ -35,10 +35,10 @@ class TourParser(HTMLParser):
             self,
             **kwargs
             ):
-        self.events = []
-        self.eventTitle = None
-        self.is_h1 = False
         self.tourName = None
+        self.events = []
+        self._eventTitle = None
+        self._is_h1 = False
         super().__init__(**kwargs)
 
     def handle_starttag(
@@ -50,30 +50,30 @@ class TourParser(HTMLParser):
             attrDict = {attrKey: attrVal for (attrKey, attrVal) in attrs}
             if 'href' in attrDict \
                     and eventUrlRegex.match(attrDict['href']):
-                self.eventTitle = attrDict['title']
+                self._eventTitle = attrDict['title']
         elif tag == 'h1':
-            self.is_h1 = True
+            self._is_h1 = True
 
     def handle_endtag(
             self,
             tag,
             ):
         if tag == 'a':
-            self.eventTitle = None
+            self._eventTitle = None
         elif tag == 'h1':
-            self.is_h1 = False
+            self._is_h1 = False
 
     def handle_data(
             self,
             data,
             ):
-        if self.eventTitle:
+        if self._eventTitle:
             eventDataMatches = eventDataRegex.search(data)
-            detailsMatches = detailsRegex.search(self.eventTitle)
+            detailsMatches = detailsRegex.search(self._eventTitle)
             if eventDataMatches:
                 self.events.append({
                     'Tour Name': cleanupRegex.sub('', self.tourName),
-                    'Event Title': cleanupRegex.sub('', self.eventTitle),
+                    'Event Title': cleanupRegex.sub('', self._eventTitle),
                     'Event Date': datetime(
                         int(eventDataMatches.group('year')),
                         int(eventDataMatches.group('month')),
@@ -83,8 +83,9 @@ class TourParser(HTMLParser):
                     'Event Venue': detailsMatches.group('venue') if detailsMatches else '',
                     'Event City': detailsMatches.group('city') if detailsMatches else '',
                     })
-        elif self.is_h1:
+        elif self._is_h1:
             self.tourName = data
+
 
 eventUrlRegex = re.compile(
         r'^/detail/live/\d+/',
@@ -107,7 +108,7 @@ cleanupRegex = re.compile(
 
 def get_response(
         url,
-        parser = None,
+        parser,
         ):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
