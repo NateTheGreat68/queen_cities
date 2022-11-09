@@ -63,6 +63,22 @@ class TourParser(HTMLParser):
     Init Parameters: Same as the base HTML Parser class.
     """
 
+    _eventUrlRegex = re.compile(
+            r'^/detail/live/\d+/',
+            re.IGNORECASE
+            )
+    _eventDataRegex = re.compile(
+            r'^(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4})\s+(?P<brief>.*)$',
+            )
+    _detailsRegex = re.compile(
+            r' live at the (?P<venue>[^,]+),\s*(?P<city>.*?(?=\s+\()|.*$)',
+            re.IGNORECASE
+            )
+    _cleanupRegex = re.compile(
+            r'^(Queen on tour:\s+|Concert:\s+)',
+            re.IGNORECASE
+            )
+
     def __init__(
             self,
             **kwargs
@@ -71,6 +87,7 @@ class TourParser(HTMLParser):
         self.events = []
         self._eventTitle = None
         self._is_h1 = False
+
         super().__init__(**kwargs)
 
     def handle_starttag(
@@ -89,7 +106,7 @@ class TourParser(HTMLParser):
         if tag == 'a':
             attrDict = {attrKey: attrVal for (attrKey, attrVal) in attrs}
             if 'href' in attrDict \
-                    and eventUrlRegex.match(attrDict['href']):
+                    and self._eventUrlRegex.match(attrDict['href']):
                 self._eventTitle = attrDict['title']
         # Look for an "h1" tag; this will have the tour name within its data.
         elif tag == 'h1':
@@ -123,12 +140,12 @@ class TourParser(HTMLParser):
         # If the _eventTitle member is not None, then that means an event tag
         # is currently being parsed.
         if self._eventTitle:
-            eventDataMatches = eventDataRegex.search(data)
-            detailsMatches = detailsRegex.search(self._eventTitle)
+            eventDataMatches = self._eventDataRegex.search(data)
+            detailsMatches = self._detailsRegex.search(self._eventTitle)
             if eventDataMatches:
                 self.events.append({
-                    'Tour Name': cleanupRegex.sub('', self.tourName),
-                    'Event Title': cleanupRegex.sub('', self._eventTitle),
+                    'Tour Name': self._cleanupRegex.sub('', self.tourName),
+                    'Event Title': self._cleanupRegex.sub('', self._eventTitle),
                     'Event Date': datetime(
                         int(eventDataMatches.group('year')),
                         int(eventDataMatches.group('month')),
@@ -142,26 +159,6 @@ class TourParser(HTMLParser):
         # currently being parsed.
         elif self._is_h1:
             self.tourName = data
-
-
-eventUrlRegex = re.compile(
-        r'^/detail/live/\d+/',
-        re.IGNORECASE
-        )
-
-eventDataRegex = re.compile(
-        r'^(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4})\s+(?P<brief>.*)$',
-        )
-
-detailsRegex = re.compile(
-        r' live at the (?P<venue>[^,]+),\s*(?P<city>.*?(?=\s+\()|.*$)',
-        re.IGNORECASE
-        )
-
-cleanupRegex = re.compile(
-        r'^(Queen on tour:\s+|Concert:\s+)',
-        re.IGNORECASE
-        )
 
 
 def get_response(
